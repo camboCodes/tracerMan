@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cursor Follower with Adjustable Size and Speed</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #f0f0f0;
+    }
+    /* The follower image is absolutely positioned, centered on the cursor, and hidden until an image is loaded */
+    #follower {
+      position: absolute;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+    /* Control panel styling */
+    #controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+    }
+    #controls label {
+      margin-right: 10px;
+    }
+    #controls input {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <!-- File input to upload your own image -->
+    <input type="file" id="upload" accept="image/*"><br>
+    <!-- Slider to adjust the image size -->
+    <label for="sizeSlider">Image Size:</label>
+    <input type="range" id="sizeSlider" min="10" max="300" value="100"><br>
+    <!-- Slider to adjust the movement speed -->
+    <label for="speedSlider">Speed:</label>
+    <input type="range" id="speedSlider" min="1" max="100" value="10">
+  </div>
+  <!-- The image that will follow the cursor -->
+  <img id="follower" src="" alt="Follower Image">
+
+  <script>
+    // Get DOM element references.
+    const uploadInput = document.getElementById('upload');
+    const follower = document.getElementById('follower');
+    const sizeSlider = document.getElementById('sizeSlider');
+    const speedSlider = document.getElementById('speedSlider');
+
+    // Handle image upload.
+    uploadInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        follower.src = event.target.result;
+        follower.style.display = 'block'; // Show the image
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Adjust image size based on the slider.
+    sizeSlider.addEventListener('input', function(e) {
+      const size = e.target.value;
+      follower.style.width = size + 'px';
+    });
+
+    // Set up variables for the target and current positions.
+    let targetX = 0, targetY = 0;
+    let currentX = 0, currentY = 0;
+
+    // Update the target position on mouse movement.
+    document.addEventListener('mousemove', function(e) {
+      targetX = e.pageX;
+      targetY = e.pageY;
+    });
+
+    // Animate the follower image with a delay determined by the speed slider.
+    function animate() {
+      // The slider value (from 1 to 100) is converted to an easing factor.
+      // A lower value means slower movement (more delay), while a higher value makes it catch up faster.
+      const ease = parseFloat(speedSlider.value) / 100;
+      currentX += (targetX - currentX) * ease;
+      currentY += (targetY - currentY) * ease;
+      follower.style.left = currentX + 'px';
+      follower.style.top = currentY + 'px';
+      requestAnimationFrame(animate);
+    }
+    animate(); // Start the animation loop.
+  </script>
+</body>
+</html>
